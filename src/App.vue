@@ -10,7 +10,13 @@
       overflow
       app
     >
-      <v-switch v-model="dark" primary label="Dark"></v-switch>
+      <Drawer />
+      <v-divider></v-divider>
+      <v-list>
+        <v-list-tile>
+          <v-switch v-model="dark" primary label="Dark"></v-switch>
+        </v-list-tile>
+      </v-list>
     </v-navigation-drawer>
 
     <v-toolbar :clipped-left="primaryDrawer.clipped" app absolute>
@@ -18,19 +24,18 @@
         v-if="primaryDrawer.type !== 'permanent'"
         @click.stop="primaryDrawer.model = !primaryDrawer.model"
       ></v-toolbar-side-icon>
-      <v-toolbar-title>Vuetify</v-toolbar-title>
+      <v-toolbar-title>Study: Todo</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-sm-and-down">
-        <v-btn flat>Link One</v-btn>
-        <v-btn flat>Link Two</v-btn>
-        <v-btn flat>Link Three</v-btn>
+        <v-btn flat>Search</v-btn>
+        <v-btn flat>Login</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
     <v-content>
       <v-container fluid>
         <v-layout align-center justify-center>
-          asdf
+          <router-view></router-view>
         </v-layout>
       </v-container>
     </v-content>
@@ -43,8 +48,11 @@
 </template>
 
 <script>
+import Drawer from "@/components/Drawer";
+
 export default {
   name: 'App',
+  components: {Drawer},
   data () {
     return {
       dark: true,

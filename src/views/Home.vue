@@ -28,8 +28,14 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex';
+  import firebase from 'firebase/app';
+  import 'firebase/firestore';
+
   export default {
-    // components: {HelloWorld}
+    computed: {
+      ...mapGetters([ 'uid' ])
+    },
     data () {
       return {
         text: '',
@@ -40,6 +46,7 @@
     },
     methods: {
       insertTodo () {
+        // firebase.firestore().collection('users').doc(this.uid).set();
         if (!this.text) return false;
         const idx = this.todos.indexOf(this.text);
         if (idx > -1) {

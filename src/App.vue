@@ -28,7 +28,7 @@
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-sm-and-down">
         <v-btn flat>Search</v-btn>
-        <v-btn flat>Login</v-btn>
+        <LoginDialog />
       </v-toolbar-items>
     </v-toolbar>
 
@@ -49,11 +49,16 @@
 
 <script>
 import Drawer from "@/components/Drawer";
+import LoginDialog from '@/components/LoginDialog';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'App',
-  components: {Drawer},
-  data () {
+  components: {Drawer, LoginDialog},
+  data() {
     return {
       dark: true,
       drawers: ['Default (no property)', 'Permanent', 'Temporary'],
@@ -68,6 +73,54 @@ export default {
         inset: false
       }
     }
+  },
+  created() {
+    // 익명 사용자 로그인
+    // TODO: 이메일 사용자 가입 및 로그인
+    // TODO: 익명 사용자 -> 이메일 사용자 전환
+    // TODO: 로그아웃
+    firebase.auth().signInAnonymously().catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      // const errorMessage = error.message;
+      if (errorCode === 'auth/operation-not-allowed') {
+        alert('You must enable Anonymous auth in the Firebase Console.');
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    });
+    // 로그인 이후 state 에 상태 저장
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        const isAnonymous = user.isAnonymous;
+        const name = isAnonymous ? '익명' : user.displayName;
+        const uid = user.uid;
+        this.insertUser(uid, name, isAnonymous);
+        this.updateUid(uid);
+        this.updateName(name);
+        // ...
+      } else {
+        // User is signed out.
+        // ...
+      }
+    });
+  },
+  methods: {
+    ...mapActions([ 'updateUid', 'updateName' ]),
+    insertUser (uid, name, isAnonymous) {
+      // Add a new document in collection 'users'
+      firebase.firestore().collection('users').doc(uid).set({
+        name,
+        isAnonymous
+      }, { merge: true }).then(function() {
+      /* eslint-disable no-console */
+        console.log('user database successfully inserted');
+      }).catch(function(error) {
+        console.error("Error writing document: ", error);
+      });
+    },
   }
 }
 </script>

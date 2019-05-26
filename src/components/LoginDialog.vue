@@ -5,6 +5,7 @@
       <v-btn flat v-on="on">Sign up</v-btn>
     </template>
 
+    <!-- TODO: 회원가입 모달 구성 -->
     <v-card>
       <v-card-title>
         <span class="headline">User Profile</span>

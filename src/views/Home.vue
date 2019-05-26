@@ -1,23 +1,29 @@
 <template>
-  <v-container
-    id="input-usage"
-    grid-list-xl
-    fluid
-  >
+  <v-container id="input-usage" grid-list-xl fluid>
 
     <v-layout wrap>
       <v-flex xs12>
 
-        <v-text-field clearable solo placeholder="할 일 입력" @keypress.enter="insertTodo" v-model="text"></v-text-field>
+        <v-text-field clearable
+                      solo
+                      hint="입력 후 엔터"
+                      :rules="[v => !!v || '할 일을 입력하세요.']"
+                      placeholder="할 일 입력"
+                      @keypress.enter="onInsert"
+                      v-model="text">
+        </v-text-field>
 
-        <v-list v-if="todos.length">
-          <v-list-tile v-for="item in todos" :key="item">
-            <v-checkbox
-              v-model="done"
-              :label="item"
-              :value="item"
-            ></v-checkbox>
-            <v-icon @click="deleteTodo(item)">delete</v-icon>
+        <v-list v-if="todoList.length">
+          <v-list-tile v-for="item in todoList" :key="item.time">
+            <v-checkbox v-model="item.isDone" @change="onStateChange(item)">
+              <template v-slot:label>
+                <span class="mr-3">{{ item.text }}</span>
+                <!-- TODO: timezone offset 처리 -->
+                <span class="caption">{{ new Date(item.time).toISOString().substr(0, 10) }} {{ new Date(item.time).toISOString().substr(11, 8) }}</span>
+              </template>
+            </v-checkbox>
+            <v-icon class="mr-3" @click="onUpdate(item)">edit</v-icon>
+            <v-icon @click="onDelete(item)">delete</v-icon>
           </v-list-tile>
         </v-list>
 
@@ -28,41 +34,38 @@
 </template>
 
 <script>
-  import { mapGetters } from 'vuex';
-  import firebase from 'firebase/app';
-  import 'firebase/firestore';
+  import { mapGetters, mapActions } from 'vuex';
 
   export default {
     computed: {
-      ...mapGetters([ 'uid' ])
+      ...mapGetters([ 'uid', 'todoList' ])
     },
     data () {
       return {
         text: '',
-        todos: [],
-        done: [], // TODO: 상태 이렇게 관리하지 말고... 아이템별로
-        enabled: true
       };
     },
     methods: {
-      insertTodo () {
-        // firebase.firestore().collection('users').doc(this.uid).set();
+      ...mapActions([ 'insertTodo', 'deleteTodo', 'updateTodo' ]),
+      onInsert () {
         if (!this.text) return false;
-        const idx = this.todos.indexOf(this.text);
-        if (idx > -1) {
-          alert('중복되는 항목입니다.');
-          return false;
-        }
-        this.todos.push(this.text);
+        const todo = {
+          time: new Date().getTime(),
+          text: this.text,
+          isDone: false,
+        };
+        this.insertTodo(todo);
         this.text = '';
       },
-      deleteTodo (item) {
-        const idx = this.todos.indexOf(item);
-        const doneIdx = this.done.indexOf(item);
-        if (idx > -1) {
-          this.todos.splice(idx, 1);
-          this.done.splice(doneIdx, 1);
-        }
+      onDelete (item) {
+        if (confirm('삭제하시겠습니까?')) this.deleteTodo(item);
+      },
+      onStateChange (item) {
+        this.updateTodo(item);
+      },
+      onUpdate (item) {
+        alert('TODO: 수정');
+        // this.updateTodo(item);
       }
     }
   }

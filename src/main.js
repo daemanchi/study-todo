@@ -18,6 +18,7 @@ const firebaseConfig = {
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+Vue.prototype.$db = firebase.firestore();
 
 Vue.config.productionTip = false;
 

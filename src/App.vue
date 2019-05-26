@@ -35,7 +35,8 @@
     <v-content>
       <v-container fluid>
         <v-layout align-center justify-center>
-          <router-view></router-view>
+          <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
+          <router-view v-else></router-view>
         </v-layout>
       </v-container>
     </v-content>
@@ -53,11 +54,14 @@ import LoginDialog from '@/components/LoginDialog';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'App',
   components: {Drawer, LoginDialog},
+  computed: {
+    ...mapGetters([ 'loading' ]),
+  },
   data() {
     return {
       dark: true,
@@ -100,7 +104,9 @@ export default {
         this.insertUser(uid, name, isAnonymous);
         this.updateUid(uid);
         this.updateName(name);
+        this.selectTodo(uid);
         // ...
+        this.setLoading(false);
       } else {
         // User is signed out.
         // ...
@@ -108,7 +114,7 @@ export default {
     });
   },
   methods: {
-    ...mapActions([ 'updateUid', 'updateName' ]),
+    ...mapActions([ 'updateUid', 'updateName', 'selectTodo', 'setLoading' ]),
     insertUser (uid, name, isAnonymous) {
       // Add a new document in collection 'users'
       firebase.firestore().collection('users').doc(uid).set({

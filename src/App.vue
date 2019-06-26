@@ -8,13 +8,12 @@
       :mini-variant="primaryDrawer.mini"
       absolute
       overflow
-      app
-    >
+      app>
       <Drawer />
       <v-divider></v-divider>
       <v-list>
         <v-list-tile>
-          <v-switch v-model="dark" primary label="Dark"></v-switch>
+          <v-switch v-model="dark" primary label="어두운 화면"></v-switch>
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
@@ -27,8 +26,8 @@
       <v-toolbar-title>Study: Todo</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-sm-and-down">
-        <v-btn flat>Search</v-btn>
-        <LoginDialog />
+        <v-btn flat>검색</v-btn>
+        <v-btn flat @click="signGoogle">구글 계정 연결</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -50,7 +49,6 @@
 
 <script>
 import Drawer from "@/components/Drawer";
-import LoginDialog from '@/components/LoginDialog';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
@@ -58,7 +56,7 @@ import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'App',
-  components: {Drawer, LoginDialog},
+  components: {Drawer},
   computed: {
     ...mapGetters([ 'loading' ]),
   },
@@ -80,9 +78,6 @@ export default {
   },
   created() {
     // 익명 사용자 로그인
-    // TODO: 이메일 사용자 가입 및 로그인
-    // TODO: 익명 사용자 -> 이메일 사용자 전환
-    // TODO: 로그아웃
     firebase.auth().signInAnonymously().catch((error) => {
       // Handle Errors here.
       const errorCode = error.code;
@@ -104,7 +99,7 @@ export default {
         this.insertUser(uid, name, isAnonymous);
         this.updateUid(uid);
         this.updateName(name);
-        this.selectTodo(uid);
+        this.selectTodos(uid);
         // ...
         this.setLoading(false);
       } else {
@@ -113,8 +108,23 @@ export default {
       }
     });
   },
+  // mounted () {
+    // firebase.auth().getRedirectResult().then(result => {
+    //   const credential = result.user.getIdToken();
+    //   firebase.auth().currentUser.linkAndRetrieveDataWithCredential(credential).then(function(usercred) {
+    //     var user = usercred.user;
+    //     console.log("Anonymous account successfully upgraded", user);
+    //   }, function(error) {
+    //     console.log("Error upgrading anonymous account", error);
+    //   });
+    // });
+  // },
   methods: {
-    ...mapActions([ 'updateUid', 'updateName', 'selectTodo', 'setLoading' ]),
+    ...mapActions([ 'updateUid', 'updateName', 'selectTodos', 'setLoading' ]),
+    signGoogle () {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const credential = firebase.auth.GoogleAuthProvider.credential(googleUser.getAuthResponse().id_token); // googleUser ?
+    },
     insertUser (uid, name, isAnonymous) {
       // Add a new document in collection 'users'
       firebase.firestore().collection('users').doc(uid).set({

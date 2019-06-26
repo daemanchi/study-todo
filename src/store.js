@@ -26,7 +26,7 @@ export default new Vuex.Store({
     updateName ({ commit }, name) {
       commit('user/UPDATE_NAME', name);
     },
-    selectTodo ({ commit }, uid) {
+    selectTodos ({ commit }, uid) {
       let todos = [];
       Vue.prototype.$db.collection('users').doc(uid)
         .collection('todos').get()
@@ -94,7 +94,10 @@ export default new Vuex.Store({
       if (targetIdx > -1) state.todoList.splice(targetIdx, 1);
     },
     ['todo/UPDATE_TODO'] (state, item) {
-
-    }
+      let target = state.todoList.find(el => {
+        return el.time === item.time;
+      });
+      if (target) Object.assign(target, item);
+    },
   },
 })
